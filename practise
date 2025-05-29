@@ -1,9 +1,14 @@
-
-        let output = "";
+let output = "";
 for (let i = 1; i <= 10; i++) {
     output += i + "<br>";
 }
-const text = document.querySelector("title");
-const changeColor = document.querySelector(".changeColor");
-text.style.color = "blue";
 document.getElementById("countOutput").innerHTML = output;
+
+// Fix selector for the title and button
+const title = document.querySelector(".title");
+const changeColorBtn = document.querySelector(".changecolor");
+
+// Add event listener to the button
+changeColorBtn.addEventListener("click", function() {
+    title.style.color = "blue";
+});
