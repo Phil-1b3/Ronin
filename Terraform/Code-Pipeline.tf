@@ -186,7 +186,7 @@ resource "aws_codebuild_project" "phils_build" {
 
     environment_variable {
       name  = "AWS_DEFAULT_REGION"
-      value = "us-west-2"
+      value = "us-east-1"
     }
 
     environment_variable {
@@ -203,6 +203,8 @@ resource "aws_codebuild_project" "phils_build" {
       name  = "IMAGE_TAG"
       value = "latest"
     }
+    
+   
   }
 
   source {
