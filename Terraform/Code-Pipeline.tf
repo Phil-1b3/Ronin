@@ -14,7 +14,7 @@ resource "random_string" "bucket_suffix" {
 resource "aws_s3_bucket_versioning" "codepipeline_artifacts_versioning" {
   bucket = aws_s3_bucket.codepipeline_artifacts.id
   versioning_configuration {
-    status = "Enabled"
+    status = "Disabled"
   }
 }
 
