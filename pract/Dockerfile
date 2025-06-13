@@ -1,5 +1,5 @@
-# Use the official Nginx image as base
-FROM nginx:alpine
+# Use Amazon ECR Public Nginx image to avoid Docker Hub rate limits
+FROM public.ecr.aws/nginx/nginx:alpine
 
 # Remove the default nginx static assets
 RUN rm -rf /usr/share/nginx/html/*
