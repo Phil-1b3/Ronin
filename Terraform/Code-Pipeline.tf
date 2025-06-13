@@ -205,6 +205,10 @@ resource "aws_codebuild_project" "phils_build" {
     }
     
    
+  environment_variable {
+      name  = "REPOSITORY_URI"
+      value = aws_ecr_repository.phils_repo.repository_url
+    }
   }
 
   source {
