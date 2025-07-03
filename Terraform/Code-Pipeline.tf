@@ -72,8 +72,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "codebuild:BatchGetBuilds",
           "codebuild:StartBuild"
         ]
-        Resource = "*"
-      },
+        Resource = "*"      },
       {
         Effect = "Allow"
         Action = [
@@ -90,6 +89,13 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         Effect = "Allow"
         Action = [
           "iam:PassRole"
+        ]
+        Resource = "*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "codepipeline:StartPipelineExecution"
         ]
         Resource = "*"
       }
@@ -205,13 +211,12 @@ resource "aws_codebuild_project" "phils_build" {
 
     environment_variable {
       name  = "IMAGE_TAG"
-      value = "latest"
+      value = var.tag_name  # Use the variable instead of hardcoded "latest"
     }
-    
-   
-  environment_variable {
+
+    environment_variable {
       name  = "REPOSITORY_URI"
-      value = aws_ecr_repository.phils_repo.repository_url
+      value = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/phils-service"
     }
   }
 
@@ -233,7 +238,6 @@ resource "aws_codepipeline" "phils_pipeline" {
     location = aws_s3_bucket.codepipeline_artifacts.bucket
     type     = "S3"
   }
-
   stage {
     name = "Source"
 
@@ -246,10 +250,11 @@ resource "aws_codepipeline" "phils_pipeline" {
       output_artifacts = ["source_output"]
 
       configuration = {
-        Owner      = "Phil-1b3"  # Replace with your GitHub username
-        Repo       = "Ronin"  # Replace with your repository name
-        Branch     = "main"                  # Replace with your branch name
-        OAuthToken = var.github_token        # You'll need to create this variable
+        Owner               = "Phil-1b3"
+        Repo                = "Ronin"
+        Branch              = "main"
+        OAuthToken          = var.github_token
+        PollForSourceChanges = "false"  # Disable polling, use webhooks instead
       }
     }
   }
@@ -292,11 +297,60 @@ resource "aws_codepipeline" "phils_pipeline" {
   }
 }
 
+# GitHub Webhook for automatic pipeline triggering
+resource "aws_codepipeline_webhook" "github_webhook" {
+  name            = "phils-github-webhook"
+  authentication  = "GITHUB_HMAC"
+  target_action   = "Source"
+  target_pipeline = aws_codepipeline.phils_pipeline.name
+
+  authentication_configuration {
+    secret_token = var.github_webhook_secret
+  }
+
+  filter {
+    json_path    = "$.ref"
+    match_equals = "refs/heads/main"
+  }
+
+  tags = {
+    Name = "phils-github-webhook"
+  }
+}
+
+# GitHub repository webhook
+resource "github_repository_webhook" "codepipeline_webhook" {
+  repository = "Ronin"
+  
+  configuration {
+    url          = aws_codepipeline_webhook.github_webhook.url
+    content_type = "json"
+    insecure_ssl = false
+    secret       = var.github_webhook_secret
+  }
+
+  events = ["push"]
+  active = true
+}
+
 # Variables for GitHub integration
 variable "github_token" {
   description = "GitHub personal access token for CodePipeline"
   type        = string
   sensitive   = true
+}
+
+variable "github_webhook_secret" {
+  description = "Secret token for GitHub webhook authentication"
+  type        = string
+  sensitive   = true
+  default     = "your-webhook-secret-here"
+}
+
+variable "tag_name" {
+  description = "Tag name for Docker images in the pipeline"
+  type        = string
+  default     = "latest"
 }
 
 # Outputs
@@ -313,4 +367,9 @@ output "s3_bucket_name" {
 output "ecr_repository_url" {
   description = "URL of the ECR repository"
   value       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/phils-service"
+}
+
+output "docker_image_tag" {
+  description = "Docker image tag being used in the pipeline"
+  value       = var.tag_name
 }
