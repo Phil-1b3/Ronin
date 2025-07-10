@@ -1,0 +1,57 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "Starting S3 deployment build..."
+      - echo "Website bucket: $WEBSITE_BUCKET"
+      - echo "Current directory: $(pwd)"
+      - echo "Checking source files..."
+      - ls -la
+      - echo "Checking pract directory..."
+      - ls -la pract/ || echo "pract directory not found"
+  
+  build:
+    commands:
+      - echo "Preparing files for S3 deployment..."
+      - cd pract
+      - echo "Files in pract directory:"
+      - ls -la
+      - echo "Renaming practise.html to index.html for S3 hosting..."
+      - cp practise.html index.html
+      - echo "Files to deploy:"
+      - ls -la *.html *.js *.css 2>/dev/null || echo "Some file types not found"
+  
+  post_build:
+    commands:
+      - echo "Deploying to S3 bucket: $WEBSITE_BUCKET"
+      - echo "Copying HTML files..."
+      - aws s3 cp index.html s3://$WEBSITE_BUCKET/index.html --content-type "text/html"
+      - aws s3 cp practise.html s3://$WEBSITE_BUCKET/practise.html --content-type "text/html"
+      
+      - echo "Copying JavaScript files..."
+      - |
+        if [ -f practise.js ]; then
+          aws s3 cp practise.js s3://$WEBSITE_BUCKET/practise.js --content-type "application/javascript"
+        else
+          echo "No practise.js file found"
+        fi
+      
+      - echo "Copying any CSS files..."
+      - |
+        for file in *.css; do
+          if [ -f "$file" ]; then
+            aws s3 cp "$file" s3://$WEBSITE_BUCKET/"$file" --content-type "text/css"
+          fi
+        done
+      
+      - echo "Setting cache control headers..."
+      - aws s3 cp s3://$WEBSITE_BUCKET/index.html s3://$WEBSITE_BUCKET/index.html --metadata-directive REPLACE --cache-control "max-age=300" --content-type "text/html"
+      
+      - echo "Deployment complete!"
+      - echo "Website should be available at: http://$WEBSITE_BUCKET.s3-website-us-east-1.amazonaws.com"
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: pract
