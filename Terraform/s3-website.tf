@@ -1,13 +1,13 @@
 # S3 Bucket for Static Website Hosting
 resource "aws_s3_bucket" "phil_website" {
-  bucket = "phil-ronin-ware-com-${random_string.website_suffix.result}"
+  bucket = "phil.ronin-ware.com"
 }
 
-resource "random_string" "website_suffix" {
-  length  = 8
-  special = false
-  upper   = false
-}
+# resource "random_string" "website_suffix" {
+#   length  = 8
+#   special = false
+#   upper   = false
+# }
 
 # Configure bucket for static website hosting
 resource "aws_s3_bucket_website_configuration" "phil_website" {

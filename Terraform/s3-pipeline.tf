@@ -2,15 +2,15 @@
 
 # S3 Bucket for Pipeline artifacts (separate from website bucket)
 resource "aws_s3_bucket" "s3_pipeline_artifacts" {
-  bucket        = "phil-s3-pipeline-artifacts-${phil-ronin-ware-com-5elkags1}"
-  force_destroy = false
+  bucket        = "phil-s3-pipeline-artifacts-${random_string.s3_pipeline_suffix.result}"
+  force_destroy = true
 }
 
-resource "random_string" "s3_pipeline_suffix" {
-  length  = 8
-  special = false
-  upper   = false
-}
+ resource "random_string" "s3_pipeline_suffix" {
+   length  = 8
+   special = false
+   upper   = false
+ }
 
 # IAM Role for S3 Pipeline
 resource "aws_iam_role" "s3_pipeline_role" {
