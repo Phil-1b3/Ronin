@@ -152,34 +152,34 @@ resource "aws_codebuild_project" "s3_build" {
 }
 
 # GitHub Webhook for S3 Pipeline
-resource "aws_codepipeline_webhook" "s3_pipeline_webhook" {
-  name            = "phil-s3-pipeline-webhook"
-  authentication  = "GITHUB_HMAC"
-  target_action   = "Source"
-  target_pipeline = aws_codepipeline.s3_pipeline.name
+# resource "aws_codepipeline_webhook" "s3_pipeline_webhook" {
+#   name            = "phil-s3-pipeline-webhook"
+#   authentication  = "GITHUB_HMAC"
+#   target_action   = "Source"
+#   target_pipeline = aws_codepipeline.s3_pipeline.name
 
-  authentication_configuration {
-    secret_token = var.github_webhook_secret
-  }
+#   authentication_configuration {
+#     secret_token = var.github_webhook_secret
+#   }
 
-  filter {
-    json_path    = "$.ref"
-    match_equals = "refs/heads/main"
-  }
-}
+#   filter {
+#     json_path    = "$.ref"
+#     match_equals = "refs/heads/main"
+#   }
+# }
 
-resource "github_repository_webhook" "s3_pipeline" {
-  repository = "Ronin"
+# resource "github_repository_webhook" "s3_pipeline" {
+#   repository = "Ronin"
 
-  configuration {
-    url          = aws_codepipeline_webhook.s3_pipeline_webhook.url
-    content_type = "json"
-    insecure_ssl = false
-    secret       = var.github_webhook_secret
-  }
+#   configuration {
+#     url          = aws_codepipeline_webhook.s3_pipeline_webhook.url
+#     content_type = "json"
+#     insecure_ssl = false
+#     secret       = var.github_webhook_secret
+#   }
 
-  events = ["push"]
-}
+#   events = ["push"]
+# }
 
 # S3 CodePipeline
 resource "aws_codepipeline" "s3_pipeline" {

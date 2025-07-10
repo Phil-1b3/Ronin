@@ -1,6 +1,6 @@
 # S3 Bucket for Static Website Hosting
 resource "aws_s3_bucket" "phil_website" {
-  bucket = "phil-roninware-net-${random_string.website_suffix.result}"
+  bucket = "phil-ronin-ware-com-${random_string.website_suffix.result}"
 }
 
 resource "random_string" "website_suffix" {
@@ -62,15 +62,15 @@ output "website_bucket_name" {
   value       = aws_s3_bucket.phil_website.bucket
 }
 
-# Route 53 record for phil.roninware.net
-data "aws_route53_zone" "roninware" {
-  name         = "roninware.net"
+# Route 53 record for phil.ronin-ware.com
+data "aws_route53_zone" "ronin_ware" {
+  name         = "ronin-ware.com"
   private_zone = false
 }
 
 resource "aws_route53_record" "phil" {
-  zone_id = data.aws_route53_zone.roninware.zone_id
-  name    = "phil.roninware.net"
+  zone_id = data.aws_route53_zone.ronin_ware.zone_id
+  name    = "phil.ronin-ware.com"
   type    = "CNAME"
   ttl     = 300
   records = [aws_s3_bucket_website_configuration.phil_website.website_endpoint]

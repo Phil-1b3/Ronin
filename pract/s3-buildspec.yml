@@ -5,17 +5,22 @@ phases:
     commands:
       - echo "Starting S3 deployment build..."
       - echo "Website bucket: $WEBSITE_BUCKET"
+      - echo "Current directory: $(pwd)"
       - echo "Checking source files..."
-      - ls -la pract/
+      - ls -la
+      - echo "Checking pract directory..."
+      - ls -la pract/ || echo "pract directory not found"
   
   build:
     commands:
       - echo "Preparing files for S3 deployment..."
       - cd pract
+      - echo "Files in pract directory:"
+      - ls -la
       - echo "Renaming practise.html to index.html for S3 hosting..."
       - cp practise.html index.html
       - echo "Files to deploy:"
-      - ls -la *.html *.js *.css 2>/dev/null || echo "No CSS files found"
+      - ls -la *.html *.js *.css 2>/dev/null || echo "Some file types not found"
   
   post_build:
     commands:
@@ -44,7 +49,7 @@ phases:
       - aws s3 cp s3://$WEBSITE_BUCKET/index.html s3://$WEBSITE_BUCKET/index.html --metadata-directive REPLACE --cache-control "max-age=300" --content-type "text/html"
       
       - echo "Deployment complete!"
-      - echo "Website URL: http://$WEBSITE_BUCKET.s3-website-us-east-1.amazonaws.com"
+      - echo "Website should be available at: http://$WEBSITE_BUCKET.s3-website-us-east-1.amazonaws.com"
 
 artifacts:
   files:
