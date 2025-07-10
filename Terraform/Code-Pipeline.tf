@@ -2,7 +2,8 @@
 
 # S3 Bucket for CodePipeline artifacts
 resource "aws_s3_bucket" "codepipeline_artifacts" {
-  bucket = "phils-codepipeline-artifacts-${random_string.bucket_suffix.result}"
+  bucket        = "phils-codepipeline-artifacts-${random_string.bucket_suffix.result}"
+  force_destroy = true
 }
 
 resource "random_string" "bucket_suffix" {
@@ -366,7 +367,7 @@ output "s3_bucket_name" {
 
 output "ecr_repository_url" {
   description = "URL of the ECR repository"
-  value       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-west-2.amazonaws.com/phils-service"
+  value       = "${data.aws_caller_identity.current.account_id}.dkr.ecr.us-east-1.amazonaws.com/phils-service"  # Changed us-west-2 to us-east-1
 }
 
 output "docker_image_tag" {

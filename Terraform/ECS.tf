@@ -1,7 +1,8 @@
 
 # ECR Repository
 resource "aws_ecr_repository" "phils_repo" {
-  name = "phils-service"
+  name         = "phils-service"
+  force_delete = true
 }
 
 # ECS Cluster
