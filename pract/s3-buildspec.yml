@@ -1,9 +1,30 @@
 version: 0.2
 
 phases:
+  pre_build:
+    commands:
+      - echo "Starting S3 deployment build..."
+      - echo "Website bucket is $WEBSITE_BUCKET"
+      - ls -la
+      - ls -la pract/
+  
   build:
     commands:
-      - echo "Hello World"
+      - echo "Preparing files for S3 deployment..."
       - cd pract
       - ls -la
+      - cp practise.html index.html
+      - echo "Files ready for deployment"
+  
+  post_build:
+    commands:
+      - echo "Deploying to S3 bucket $WEBSITE_BUCKET"
+      - aws s3 cp index.html s3://$WEBSITE_BUCKET/index.html --content-type "text/html"
       - aws s3 cp practise.html s3://$WEBSITE_BUCKET/practise.html --content-type "text/html"
+      - test -f practise.js && aws s3 cp practise.js s3://$WEBSITE_BUCKET/practise.js --content-type "application/javascript" || echo "No JS file found"
+      - echo "Deployment complete!"
+
+artifacts:
+  files:
+    - "**/*"
+  base-directory: pract
